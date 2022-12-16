@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  eink-gateway:
+    image: ghcr.io/tajnymag/vsb-eink-gateway:latest
+    restart: always
+    networks:
+      - traefik
+    labels:
+      traefik.enable: true
+      traefik.http.services.eink-gateway.loadbalancer.server.port: 8080
+      traefik.http.routers.eink-gateway.rule: Host(`eink.lksv.cz`) && PathPrefix(`/gateway`)
+      traefik.http.routers.eink-gateway.entrypoints: websecure
+      traefik.http.routers.eink-gateway.tls.certresolver: myresolver
+      traefik.http.routers.eink-gateway.service: eink-gateway
+      traefik.http.routers.eink-gateway.middlewares: eink-gateway-stripprefix@docker
+      traefik.http.middlewares.eink-gateway-stripprefix.stripprefix.prefixes: /gateway
+
+networks:
+  traefik:
+    external: true

@@ -1,0 +1,28 @@
+version: "3.3"
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    command: -H unix:///var/run/docker.sock
+    restart: always
+    networks:
+      - traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    labels:
+      traefik.enable: true
+      traefik.http.services.frontend.loadbalancer.server.port: 9000
+      traefik.http.routers.frontend.rule: Host(`eink.lksv.cz`) && PathPrefix(`/portainer`)
+      traefik.http.routers.frontend.entrypoints: websecure
+      traefik.http.routers.frontend.tls.certresolver: myresolver
+      traefik.http.routers.frontend.service: frontend
+      traefik.http.routers.frontend.middlewares: portainer-stripprefix@docker
+      traefik.http.middlewares.portainer-stripprefix.stripprefix.prefixes: /portainer
+
+volumes:
+  portainer_data:
+
+networks:
+  traefik:
+    external: true

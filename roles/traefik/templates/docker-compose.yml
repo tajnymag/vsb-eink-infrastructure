@@ -1,0 +1,41 @@
+version: "3.3"
+
+services:
+  traefik:
+    container_name: traefik
+    image: "traefik:v2.9"
+    restart: always
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker
+      - --log.level=ERROR
+      - --api.dashboard=true
+      - --certificatesresolvers.myresolver.acme.httpchallenge=true
+      - --certificatesresolvers.myresolver.acme.email=marek.lukas.st@vsb.cz
+      - --certificatesresolvers.myresolver.acme.storage=/etc/traefik/acme/acme.json
+      - --certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web
+    networks:
+      - traefik
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./acme:/etc/traefik/acme"
+    labels:
+      traefik.http.routers.dashboard.tls: true
+      traefik.http.routers.dashboard.entrypoints: websecure
+      traefik.http.routers.dashboard.rule: Host(`eink.lksv.cz`) && (PathPrefix(`/traefik/`) || Headers(`Referer`, `https://eink.lksv.cz/traefik/dashboard/`))
+      traefik.http.routers.dashboard.service: api@internal
+      traefik.http.routers.dashboard.middlewares: dashboard
+      traefik.http.middlewares.dashboard.chain.middlewares: dashboard-strip-prefix
+      traefik.http.middlewares.dashboard-strip-prefix.stripprefix.prefixes: /traefik
+      traefik.http.routers.http-catchall.rule: hostregexp(`{host:.+}`)
+      traefik.http.routers.http-catchall.entrypoints: web
+      traefik.http.routers.http-catchall.middlewares: redirect-to-https
+      traefik.http.middlewares.redirect-to-https.redirectscheme.scheme: https
+
+networks:
+  traefik:
+    external: true

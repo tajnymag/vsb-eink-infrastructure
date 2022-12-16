@@ -1,0 +1,20 @@
+---
+- name: Ensure /opt/portainer exists
+  file: 
+    path: /opt/portainer
+    state: directory
+
+- name: Template docker-compose
+  template:
+    src: docker-compose.yml
+    dest: /opt/portainer/docker-compose.yml
+
+- name: Tear down existing services
+  community.docker.docker_compose:
+    project_src: /opt/portainer
+    state: absent
+    remove_orphans: yes
+
+- name: Create and start services
+  community.docker.docker_compose:
+    project_src: /opt/portainer

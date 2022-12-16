@@ -1,0 +1,26 @@
+---
+- name: Ensure /opt/watchtower exists
+  ansible.builtin.file: 
+    path: /opt/watchtower
+    state: directory
+
+- name: Template docker-compose
+  ansible.builtin.template:
+    src: docker-compose.yml
+    dest: /opt/watchtower/docker-compose.yml
+
+- name: Ensure a symlink to docker config.json exists
+  ansible.builtin.file:
+    src: /root/.docker/config.json
+    dest: /opt/watchtower/docker.json
+    state: link
+
+- name: Tear down existing services
+  community.docker.docker_compose:
+    project_src: /opt/watchtower
+    state: absent
+    remove_orphans: yes
+
+- name: Create and start services
+  community.docker.docker_compose:
+    project_src: /opt/watchtower

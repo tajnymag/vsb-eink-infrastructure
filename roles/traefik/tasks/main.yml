@@ -1,0 +1,29 @@
+---
+- name: Create traefik network
+  community.docker.docker_network:
+    name: traefik
+
+- name: Ensure /opt/traefik exists
+  ansible.builtin.file: 
+    path: /opt/traefik
+    state: directory
+
+- name: Template docker-compose
+  ansible.builtin.template:
+    src: docker-compose.yml
+    dest: /opt/traefik/docker-compose.yml
+
+- name: Create acme directory
+  ansible.builtin.file:
+    path: /opt/traefik/acme
+    state: directory
+
+- name: Tear down existing services
+  community.docker.docker_compose:
+    project_src: /opt/traefik
+    state: absent
+    remove_orphans: yes
+
+- name: Create and start services
+  community.docker.docker_compose:
+    project_src: /opt/traefik

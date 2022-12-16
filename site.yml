@@ -1,0 +1,13 @@
+---
+- name: Deploy everything
+  hosts: eink
+  gather_facts: False
+  become: true
+
+  roles:
+    - firewall
+    - docker
+    - traefik
+    - watchtower
+    - portainer
+    - eink-gateway

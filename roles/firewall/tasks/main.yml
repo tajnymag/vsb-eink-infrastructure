@@ -1,0 +1,35 @@
+- name: Install Firewalld
+  ansible.builtin.apt:
+    pkg:
+      - firewalld
+    update_cache: yes
+
+- name: Ensure firewalld is running
+  ansible.builtin.systemd:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Allow HTTP
+  ansible.builtin.firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+
+- name: Allow HTTPS
+  ansible.builtin.firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+
+- name: Allow SSH
+  ansible.builtin.firewalld:
+    service: ssh
+    permanent: yes
+    state: enabled
+
+- name: Allow Portainer
+  ansible.builtin.firewalld:
+    port: 9000/tcp
+    permanent: yes
+    state: enabled
